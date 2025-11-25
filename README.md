@@ -4,23 +4,7 @@
 
 An interactive web-based tool for drawing, analyzing, and comparing graphs. This tool provides comprehensive graph theory analysis including isomorphism checking, planarity testing, and various graph properties.
 
----
-
-## Development History
-
-### Prompts Used to Create This Tool
-
-1. **Initial Request:**
-   > "Can you create a UI using html, css, and javascript that will help me determine whether the image of a graph is isomorphic"
-
-2. **First Enhancement:**
-   > "add a functionality which determines whether a graph is planar or not"
-
-3. **Second Enhancement:**
-   > "add functionalities which help determine whether a graph is complete, connected, determines whether is has an euler cycle, a hamiltonian circuit, and what is the chromatic number of a circuit"
-
-4. **Documentation Request:**
-   > "Please create documentation for this and also add the prompts I used to create it"
+**Created with**: Claude Sonnet (Anthropic AI)
 
 ---
 
@@ -407,6 +391,6 @@ This tool is created for educational purposes. Feel free to use, modify, and dis
 
 ---
 
-**Created**: 2024
-**Last Updated**: 2024
-**Author**: AI-Assisted Development via Claude (Anthropic)
+**Created**: 2024  
+**Last Updated**: 2024  
+**Developed with**: Claude Sonnet (Anthropic AI)
