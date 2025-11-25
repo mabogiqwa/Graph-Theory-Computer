@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Graph Isomorphism Checker</title>
     <style>
         * {
@@ -192,6 +192,71 @@
             display: block;
         }
 
+        .properties-result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1em;
+            display: none;
+            background: #e7f3ff;
+            border: 2px solid #b3d9ff;
+            color: #004085;
+        }
+
+        .properties-result.show {
+            display: block;
+        }
+
+        .property-section {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .property-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .property-detail {
+            margin: 5px 0;
+            padding-left: 10px;
+        }
+
+        .property-yes {
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .property-no {
+            color: #721c24;
+            font-weight: 600;
+        }
+
+        .mst-result, .euler-result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1em;
+            display: none;
+            background: #e7f3ff;
+            border: 2px solid #b3d9ff;
+            color: #004085;
+        }
+
+        .mst-result.show, .euler-result.show {
+            display: block;
+        }
+
+        .path-highlight {
+            color: #667eea;
+            font-weight: bold;
+        }
+
         .info {
             background: #e7f3ff;
             border: 2px solid #b3d9ff;
@@ -238,19 +303,30 @@
             <button class="btn-primary" onclick="checkIsomorphism()">Check Isomorphism</button>
             <button class="btn-primary" onclick="checkPlanarity()">Check Planarity</button>
             <button class="btn-primary" onclick="analyzeGraphProperties()">Analyze Properties</button>
+            <button class="btn-primary" onclick="findMinimalSpanningTree()">Find MST</button>
+            <button class="btn-primary" onclick="findEulerPath()">Find Euler Path/Cycle</button>
             <button class="btn-secondary" onclick="clearAll()">Clear All</button>
         </div>
 
         <div id="result" class="result"></div>
         <div id="planarity-result" class="planarity-result"></div>
         <div id="properties-result" class="properties-result"></div>
+        <div id="mst-result" class="mst-result"></div>
+        <div id="euler-result" class="euler-result"></div>
 
         <div class="info">
             <strong>How to use:</strong> Select a mode (Add Vertex/Add Edge/Delete), then click on the canvas. 
             For edges, click two vertices in sequence. Two graphs are isomorphic if there's a one-to-one mapping 
             between their vertices that preserves adjacency.
             <br><br>
-            <strong>Planarity:</strong> Uses Kuratowski's theorem - a graph is planar if it doesn't contain K₅ or K₃,₃ as a subgraph.
+            <strong>Planarity:</strong> A graph is planar if it CAN be drawn without edge crossings (not whether it currently IS drawn that way). 
+            Uses Kuratowski's theorem - checks for K₅ or K₃,₃ subgraphs and edge count formula (e ≤ 3v-6).
+            <br><br>
+            <strong>Graph Properties:</strong> Analyze complete, connected, bipartite, Eulerian, Hamiltonian properties and chromatic number.
+            <br><br>
+            <strong>MST:</strong> Finds Minimum Spanning Tree using Kruskal's algorithm (for connected graphs).
+            <br><br>
+            <strong>Euler Path/Cycle:</strong> Finds and displays the actual Euler path or cycle if one exists.
         </div>
     </div>
 
@@ -270,7 +346,20 @@
         function setMode(newMode) {
             mode = newMode;
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+
+            // Map mode to button label and add active class to matching button
+            const labelMap = {
+                'vertex': 'Add Vertex',
+                'edge': 'Add Edge',
+                'delete': 'Delete'
+            };
+            const targetLabel = labelMap[newMode];
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                if (btn.textContent.trim() === targetLabel) {
+                    btn.classList.add('active');
+                }
+            });
+
             selectedVertex = { 1: null, 2: null };
             drawGraph(1);
             drawGraph(2);
@@ -338,6 +427,7 @@
             const ctx = graphNum === 1 ? ctx1 : ctx2;
             const graph = graphs[graphNum];
 
+            // Clear considering CSS scaling
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw edges
@@ -346,6 +436,7 @@
             graph.edges.forEach(edge => {
                 const v1 = graph.vertices[edge[0]];
                 const v2 = graph.vertices[edge[1]];
+                if (!v1 || !v2) return;
                 ctx.beginPath();
                 ctx.moveTo(v1.x, v1.y);
                 ctx.lineTo(v2.x, v2.y);
@@ -500,9 +591,14 @@
                     continue;
                 }
                 
-                // Euler's formula check: v - e + f = 2, and e <= 3v - 6 for planar graphs
-                if (v >= 3 && e > 3 * v - 6) {
-                    results.push({ graphNum, planar: false, reason: `Too many edges (${e} > ${3*v-6})` });
+                if (v === 1 || v === 2) {
+                    results.push({ graphNum, planar: true, reason: "≤2 vertices (trivially planar)" });
+                    continue;
+                }
+                
+                // Euler's formula check: e <= 3v - 6 for planar graphs with v >= 3
+                if (e > 3 * v - 6) {
+                    results.push({ graphNum, planar: false, reason: `Too many edges: ${e} > ${3*v-6}` });
                     continue;
                 }
                 
@@ -521,7 +617,7 @@
                     continue;
                 }
                 
-                results.push({ graphNum, planar: true, reason: "No K₅ or K₃,₃ subgraph found" });
+                results.push({ graphNum, planar: true, reason: "No K₅ or K₃,₃ found, passes planarity tests" });
             }
             
             showPlanarityResult(results);
@@ -665,6 +761,428 @@
             }
             
             resultDiv.style.whiteSpace = 'pre-line';
+        }
+
+        function analyzeGraphProperties() {
+            const resultsDiv = document.getElementById('properties-result');
+            resultsDiv.innerHTML = '';
+            
+            for (let graphNum = 1; graphNum <= 2; graphNum++) {
+                const graph = graphs[graphNum];
+                const v = graph.vertices.length;
+                const e = graph.edges.length;
+                
+                if (v === 0) {
+                    const section = document.createElement('div');
+                    section.className = 'property-section';
+                    section.innerHTML = `<div class="property-title">Graph ${graphNum}: Empty Graph</div>`;
+                    resultsDiv.appendChild(section);
+                    continue;
+                }
+                
+                const adj = getAdjacencyMatrix(graph);
+                
+                // Check all properties
+                const isComplete = checkComplete(adj);
+                const isConnected = checkConnected(adj);
+                const isBipartiteResult = isBipartite(adj);
+                const eulerInfo = checkEulerCycle(adj);
+                const hamiltonianInfo = checkHamiltonianCircuit(adj, graph);
+                const chromaticNumber = calculateChromaticNumber(adj);
+                
+                // Create display section
+                const section = document.createElement('div');
+                section.className = 'property-section';
+                
+                let html = `<div class="property-title">Graph ${graphNum} Analysis</div>`;
+                html += `<div class="property-detail">Vertices: ${v}, Edges: ${e}</div>`;
+                html += `<div class="property-detail"><strong>Complete:</strong> <span class="property-${isComplete ? 'yes' : 'no'}">${isComplete ? 'YES' : 'NO'}</span></div>`;
+                html += `<div class="property-detail"><strong>Connected:</strong> <span class="property-${isConnected ? 'yes' : 'no'}">${isConnected ? 'YES' : 'NO'}</span></div>`;
+                html += `<div class="property-detail"><strong>Bipartite:</strong> <span class="property-${isBipartiteResult ? 'yes' : 'no'}">${isBipartiteResult ? 'YES' : 'NO'}</span></div>`;
+                html += `<div class="property-detail"><strong>Euler Cycle:</strong> <span class="property-${eulerInfo.hasEulerCycle ? 'yes' : 'no'}">${eulerInfo.hasEulerCycle ? 'YES' : 'NO'}</span> ${eulerInfo.reason}</div>`;
+                html += `<div class="property-detail"><strong>Hamiltonian Circuit:</strong> <span class="property-${hamiltonianInfo.hasHamiltonian ? 'yes' : 'no'}">${hamiltonianInfo.hasHamiltonian ? 'YES' : 'NO'}</span> ${hamiltonianInfo.reason}</div>`;
+                html += `<div class="property-detail"><strong>Chromatic Number:</strong> χ = ${chromaticNumber}</div>`;
+                
+                section.innerHTML = html;
+                resultsDiv.appendChild(section);
+            }
+            
+            resultsDiv.className = 'properties-result show';
+        }
+
+        function checkComplete(adj) {
+            const n = adj.length;
+            if (n <= 1) return true;
+            
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    if (adj[i][j] === 0) return false;
+                }
+            }
+            return true;
+        }
+
+        function checkConnected(adj) {
+            const n = adj.length;
+            if (n <= 1) return true;
+            
+            const visited = new Array(n).fill(false);
+            
+            // DFS from vertex 0
+            function dfs(v) {
+                visited[v] = true;
+                for (let i = 0; i < n; i++) {
+                    if (adj[v][i] === 1 && !visited[i]) {
+                        dfs(i);
+                    }
+                }
+            }
+            
+            dfs(0);
+            return visited.every(v => v);
+        }
+
+        function checkEulerCycle(adj) {
+            const n = adj.length;
+            
+            if (!checkConnected(adj)) {
+                return { hasEulerCycle: false, reason: '(graph not connected)' };
+            }
+            
+            // Count degree of each vertex
+            const degrees = adj.map(row => row.reduce((sum, val) => sum + val, 0));
+            
+            const oddDegreeCount = degrees.filter(d => d % 2 === 1).length;
+            
+            if (oddDegreeCount === 0) {
+                return { hasEulerCycle: true, reason: '(all vertices have even degree)' };
+            } else if (oddDegreeCount === 2) {
+                return { hasEulerCycle: false, reason: '(has Euler path but not cycle - 2 odd degree vertices)' };
+            } else {
+                return { hasEulerCycle: false, reason: `(${oddDegreeCount} vertices with odd degree)` };
+            }
+        }
+
+        function checkHamiltonianCircuit(adj, graph) {
+            const n = adj.length;
+            
+            if (n < 3) {
+                return { hasHamiltonian: false, reason: '(needs at least 3 vertices)' };
+            }
+            
+            if (!checkConnected(adj)) {
+                return { hasHamiltonian: false, reason: '(graph not connected)' };
+            }
+            
+            // For small graphs, try to find a Hamiltonian circuit using backtracking
+            if (n <= 8) {
+                const path = [0];
+                const visited = new Array(n).fill(false);
+                visited[0] = true;
+                
+                if (findHamiltonianPath(adj, path, visited, n)) {
+                    return { hasHamiltonian: true, reason: '(circuit found)' };
+                } else {
+                    return { hasHamiltonian: false, reason: '(no circuit found)' };
+                }
+            } else {
+                // Use Dirac's theorem: if every vertex has degree >= n/2, then Hamiltonian
+                const degrees = adj.map(row => row.reduce((sum, val) => sum + val, 0));
+                const minDegree = Math.min(...degrees);
+                
+                if (minDegree >= n / 2) {
+                    return { hasHamiltonian: true, reason: "(Dirac's theorem - min degree ≥ n/2)" };
+                } else {
+                    return { hasHamiltonian: false, reason: '(cannot verify for large graphs)' };
+                }
+            }
+        }
+
+        function findHamiltonianPath(adj, path, visited, n) {
+            if (path.length === n) {
+                // Check if there's an edge back to start
+                return adj[path[path.length - 1]][path[0]] === 1;
+            }
+            
+            const current = path[path.length - 1];
+            
+            for (let next = 0; next < n; next++) {
+                if (adj[current][next] === 1 && !visited[next]) {
+                    path.push(next);
+                    visited[next] = true;
+                    
+                    if (findHamiltonianPath(adj, path, visited, n)) {
+                        return true;
+                    }
+                    
+                    path.pop();
+                    visited[next] = false;
+                }
+            }
+            
+            return false;
+        }
+
+        function calculateChromaticNumber(adj) {
+            const n = adj.length;
+            if (n === 0) return 0;
+            if (n === 1) return 1;
+            
+            // Check if bipartite (chromatic number = 2)
+            if (isBipartite(adj)) return 2;
+            
+            // Check if complete graph (chromatic number = n)
+            if (checkComplete(adj)) return n;
+            
+            // Try greedy coloring with different orderings
+            let minColors = n;
+            
+            for (let attempt = 0; attempt < 3; attempt++) {
+                const colors = new Array(n).fill(-1);
+                const vertices = Array.from({ length: n }, (_, i) => i);
+                
+                if (attempt === 1) {
+                    // Sort by degree (largest first)
+                    const degrees = adj.map(row => row.reduce((sum, val) => sum + val, 0));
+                    vertices.sort((a, b) => degrees[b] - degrees[a]);
+                } else if (attempt === 2) {
+                    // Random order
+                    vertices.sort(() => Math.random() - 0.5);
+                }
+                
+                for (const v of vertices) {
+                    const usedColors = new Set();
+                    
+                    for (let i = 0; i < n; i++) {
+                        if (adj[v][i] === 1 && colors[i] !== -1) {
+                            usedColors.add(colors[i]);
+                        }
+                    }
+                    
+                    for (let color = 0; color < n; color++) {
+                        if (!usedColors.has(color)) {
+                            colors[v] = color;
+                            break;
+                        }
+                    }
+                }
+                
+                const numColors = Math.max(...colors) + 1;
+                minColors = Math.min(minColors, numColors);
+            }
+            
+            return minColors;
+        }
+
+        function isBipartite(adj) {
+            const n = adj.length;
+            const colors = new Array(n).fill(-1);
+            
+            for (let start = 0; start < n; start++) {
+                if (colors[start] !== -1) continue;
+                
+                const queue = [start];
+                colors[start] = 0;
+                
+                while (queue.length > 0) {
+                    const v = queue.shift();
+                    
+                    for (let i = 0; i < n; i++) {
+                        if (adj[v][i] === 1) {
+                            if (colors[i] === -1) {
+                                colors[i] = 1 - colors[v];
+                                queue.push(i);
+                            } else if (colors[i] === colors[v]) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return true;
+        }
+
+        // Minimal Spanning Tree (Kruskal) UI function & helpers
+        function findMinimalSpanningTree() {
+            const resultsDiv = document.getElementById('mst-result');
+            resultsDiv.innerHTML = '';
+            
+            for (let graphNum = 1; graphNum <= 2; graphNum++) {
+                const graph = graphs[graphNum];
+                const v = graph.vertices.length;
+                const e = graph.edges.length;
+                
+                if (v === 0) {
+                    const section = document.createElement('div');
+                    section.className = 'property-section';
+                    section.innerHTML = `<div class="property-title">Graph ${graphNum}: Empty Graph</div>`;
+                    resultsDiv.appendChild(section);
+                    continue;
+                }
+                
+                const adj = getAdjacencyMatrix(graph);
+                
+                if (!checkConnected(adj)) {
+                    const section = document.createElement('div');
+                    section.className = 'property-section';
+                    section.innerHTML = `
+                        <div class="property-title">Graph ${graphNum}: MST Not Possible</div>
+                        <div class="property-detail">Graph is not connected - MST only exists for connected graphs</div>
+                    `;
+                    resultsDiv.appendChild(section);
+                    continue;
+                }
+                
+                // Use Kruskal's algorithm
+                const mst = kruskalMST(graph);
+                
+                const section = document.createElement('div');
+                section.className = 'property-section';
+                let html = `<div class="property-title">Graph ${graphNum}: Minimum Spanning Tree</div>`;
+                html += `<div class="property-detail">MST has ${mst.length} edges (spanning ${v} vertices)</div>`;
+                html += `<div class="property-detail"><strong>Edges in MST:</strong></div>`;
+                
+                mst.forEach((edge, i) => {
+                    html += `<div class="property-detail">  ${i+1}. <span class="path-highlight">(${edge[0]} - ${edge[1]})</span></div>`;
+                });
+                
+                section.innerHTML = html;
+                resultsDiv.appendChild(section);
+            }
+            
+            resultsDiv.className = 'mst-result show';
+        }
+
+        function kruskalMST(graph) {
+            const edges = graph.edges.slice();
+            const parent = Array.from({ length: graph.vertices.length }, (_, i) => i);
+            const mst = [];
+            
+            function find(x) {
+                if (parent[x] !== x) {
+                    parent[x] = find(parent[x]);
+                }
+                return parent[x];
+            }
+            
+            function union(x, y) {
+                const rootX = find(x);
+                const rootY = find(y);
+                if (rootX !== rootY) {
+                    parent[rootX] = rootY;
+                    return true;
+                }
+                return false;
+            }
+            
+            // Sort edges by their indices (could use weights if we had them)
+            edges.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
+            
+            for (const edge of edges) {
+                if (union(edge[0], edge[1])) {
+                    mst.push(edge);
+                    if (mst.length === graph.vertices.length - 1) break;
+                }
+            }
+            
+            return mst;
+        }
+
+        // Euler path/cycle UI and algorithm
+        function findEulerPath() {
+            const resultsDiv = document.getElementById('euler-result');
+            resultsDiv.innerHTML = '';
+            
+            for (let graphNum = 1; graphNum <= 2; graphNum++) {
+                const graph = graphs[graphNum];
+                const v = graph.vertices.length;
+                
+                if (v === 0) {
+                    const section = document.createElement('div');
+                    section.className = 'property-section';
+                    section.innerHTML = `<div class="property-title">Graph ${graphNum}: Empty Graph</div>`;
+                    resultsDiv.appendChild(section);
+                    continue;
+                }
+                
+                const adj = getAdjacencyMatrix(graph);
+                
+                if (!checkConnected(adj)) {
+                    const section = document.createElement('div');
+                    section.className = 'property-section';
+                    section.innerHTML = `
+                        <div class="property-title">Graph ${graphNum}: No Euler Path/Cycle</div>
+                        <div class="property-detail">Graph is not connected</div>
+                    `;
+                    resultsDiv.appendChild(section);
+                    continue;
+                }
+                
+                // Count odd degree vertices
+                const degrees = adj.map(row => row.reduce((sum, val) => sum + val, 0));
+                const oddDegreeVertices = [];
+                degrees.forEach((deg, idx) => {
+                    if (deg % 2 === 1) oddDegreeVertices.push(idx);
+                });
+                
+                const section = document.createElement('div');
+                section.className = 'property-section';
+                let html = `<div class="property-title">Graph ${graphNum}: Euler Path/Cycle</div>`;
+                
+                if (oddDegreeVertices.length === 0) {
+                    // Has Euler cycle
+                    const path = findEulerianPath(graph, adj, 0, true);
+                    html += `<div class="property-detail"><strong>Result:</strong> <span class="property-yes">Euler Cycle Found!</span></div>`;
+                    html += `<div class="property-detail"><strong>Cycle:</strong></div>`;
+                    html += `<div class="property-detail"><span class="path-highlight">${path.join(' → ')}</span></div>`;
+                } else if (oddDegreeVertices.length === 2) {
+                    // Has Euler path
+                    const path = findEulerianPath(graph, adj, oddDegreeVertices[0], false);
+                    html += `<div class="property-detail"><strong>Result:</strong> <span class="property-yes">Euler Path Found!</span> (no cycle)</div>`;
+                    html += `<div class="property-detail">Path must start at vertex ${oddDegreeVertices[0]} or ${oddDegreeVertices[1]}</div>`;
+                    html += `<div class="property-detail"><strong>Path:</strong></div>`;
+                    html += `<div class="property-detail"><span class="path-highlight">${path.join(' → ')}</span></div>`;
+                } else {
+                    html += `<div class="property-detail"><strong>Result:</strong> <span class="property-no">No Euler Path or Cycle</span></div>`;
+                    html += `<div class="property-detail">Graph has ${oddDegreeVertices.length} vertices with odd degree</div>`;
+                    html += `<div class="property-detail">Odd degree vertices: ${oddDegreeVertices.join(', ')}</div>`;
+                }
+                
+                section.innerHTML = html;
+                resultsDiv.appendChild(section);
+            }
+            
+            resultsDiv.className = 'euler-result show';
+        }
+
+        function findEulerianPath(graph, adj, startVertex, isCycle) {
+            // Hierholzer's algorithm
+            const n = adj.length;
+            const adjCopy = adj.map(row => row.slice());
+            const stack = [startVertex];
+            const path = [];
+            
+            while (stack.length > 0) {
+                const v = stack[stack.length - 1];
+                let foundEdge = false;
+                
+                for (let u = 0; u < n; u++) {
+                    if (adjCopy[v][u] === 1) {
+                        stack.push(u);
+                        adjCopy[v][u] = 0;
+                        adjCopy[u][v] = 0;
+                        foundEdge = true;
+                        break;
+                    }
+                }
+                
+                if (!foundEdge) {
+                    path.push(stack.pop());
+                }
+            }
+            
+            return path.reverse();
         }
 
         // Initialize
