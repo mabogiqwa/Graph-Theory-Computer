@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Isomorphism Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .instructions {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 0.95em;
+        }
+
+        .graphs-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .graph-panel {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+
+        .graph-title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        canvas {
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: crosshair;
+            display: block;
+            width: 100%;
+            height: 350px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #ff4757;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ee5a6f;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        .result.isomorphic {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+
+        .result.not-isomorphic {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+
+        .planarity-result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            display: none;
+        }
+
+        .planarity-result.planar {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+
+        .planarity-result.non-planar {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+
+        .info {
+            background: #e7f3ff;
+            border: 2px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Graph Isomorphism Checker</h1>
+        <div class="instructions">
+            Click to add vertices, then click two vertices to create edges. Draw two graphs and check if they're isomorphic!
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="setMode('vertex')">Add Vertex</button>
+            <button class="mode-btn" onclick="setMode('edge')">Add Edge</button>
+            <button class="mode-btn" onclick="setMode('delete')">Delete</button>
+        </div>
+
+        <div class="graphs-container">
+            <div class="graph-panel">
+                <div class="graph-title">Graph 1</div>
+                <canvas id="canvas1" width="500" height="350"></canvas>
+                <div class="controls">
+                    <button class="btn-danger" onclick="clearGraph(1)">Clear Graph 1</button>
+                </div>
+            </div>
+
+            <div class="graph-panel">
+                <div class="graph-title">Graph 2</div>
+                <canvas id="canvas2" width="500" height="350"></canvas>
+                <div class="controls">
+                    <button class="btn-danger" onclick="clearGraph(2)">Clear Graph 2</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="checkIsomorphism()">Check Isomorphism</button>
+            <button class="btn-primary" onclick="checkPlanarity()">Check Planarity</button>
+            <button class="btn-primary" onclick="analyzeGraphProperties()">Analyze Properties</button>
+            <button class="btn-secondary" onclick="clearAll()">Clear All</button>
+        </div>
+
+        <div id="result" class="result"></div>
+        <div id="planarity-result" class="planarity-result"></div>
+        <div id="properties-result" class="properties-result"></div>
+
+        <div class="info">
+            <strong>How to use:</strong> Select a mode (Add Vertex/Add Edge/Delete), then click on the canvas. 
+            For edges, click two vertices in sequence. Two graphs are isomorphic if there's a one-to-one mapping 
+            between their vertices that preserves adjacency.
+            <br><br>
+            <strong>Planarity:</strong> Uses Kuratowski's theorem - a graph is planar if it doesn't contain K₅ or K₃,₃ as a subgraph.
+        </div>
+    </div>
+
+    <script>
+        const canvas1 = document.getElementById('canvas1');
+        const canvas2 = document.getElementById('canvas2');
+        const ctx1 = canvas1.getContext('2d');
+        const ctx2 = canvas2.getContext('2d');
+
+        let mode = 'vertex';
+        let graphs = {
+            1: { vertices: [], edges: [] },
+            2: { vertices: [], edges: [] }
+        };
+        let selectedVertex = { 1: null, 2: null };
+
+        function setMode(newMode) {
+            mode = newMode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            selectedVertex = { 1: null, 2: null };
+            drawGraph(1);
+            drawGraph(2);
+        }
+
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (evt.clientX - rect.left) * scaleX,
+                y: (evt.clientY - rect.top) * scaleY
+            };
+        }
+
+        function findVertex(graphNum, x, y) {
+            const vertices = graphs[graphNum].vertices;
+            for (let i = 0; i < vertices.length; i++) {
+                const v = vertices[i];
+                const dist = Math.sqrt((x - v.x) ** 2 + (y - v.y) ** 2);
+                if (dist < 20) return i;
+            }
+            return -1;
+        }
+
+        canvas1.addEventListener('click', (e) => handleClick(1, e));
+        canvas2.addEventListener('click', (e) => handleClick(2, e));
+
+        function handleClick(graphNum, e) {
+            const pos = getMousePos(graphNum === 1 ? canvas1 : canvas2, e);
+            const vertexIndex = findVertex(graphNum, pos.x, pos.y);
+
+            if (mode === 'vertex' && vertexIndex === -1) {
+                graphs[graphNum].vertices.push({ x: pos.x, y: pos.y, id: graphs[graphNum].vertices.length });
+                drawGraph(graphNum);
+            } else if (mode === 'edge' && vertexIndex !== -1) {
+                if (selectedVertex[graphNum] === null) {
+                    selectedVertex[graphNum] = vertexIndex;
+                } else {
+                    if (selectedVertex[graphNum] !== vertexIndex) {
+                        const edge = [selectedVertex[graphNum], vertexIndex].sort((a, b) => a - b);
+                        const exists = graphs[graphNum].edges.some(e => e[0] === edge[0] && e[1] === edge[1]);
+                        if (!exists) {
+                            graphs[graphNum].edges.push(edge);
+                        }
+                    }
+                    selectedVertex[graphNum] = null;
+                }
+                drawGraph(graphNum);
+            } else if (mode === 'delete' && vertexIndex !== -1) {
+                graphs[graphNum].edges = graphs[graphNum].edges.filter(e => 
+                    e[0] !== vertexIndex && e[1] !== vertexIndex
+                ).map(e => [
+                    e[0] > vertexIndex ? e[0] - 1 : e[0],
+                    e[1] > vertexIndex ? e[1] - 1 : e[1]
+                ]);
+                graphs[graphNum].vertices.splice(vertexIndex, 1);
+                graphs[graphNum].vertices.forEach((v, i) => v.id = i);
+                drawGraph(graphNum);
+            }
+        }
+
+        function drawGraph(graphNum) {
+            const canvas = graphNum === 1 ? canvas1 : canvas2;
+            const ctx = graphNum === 1 ? ctx1 : ctx2;
+            const graph = graphs[graphNum];
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw edges
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 2;
+            graph.edges.forEach(edge => {
+                const v1 = graph.vertices[edge[0]];
+                const v2 = graph.vertices[edge[1]];
+                ctx.beginPath();
+                ctx.moveTo(v1.x, v1.y);
+                ctx.lineTo(v2.x, v2.y);
+                ctx.stroke();
+            });
+
+            // Draw vertices
+            graph.vertices.forEach((v, i) => {
+                ctx.beginPath();
+                ctx.arc(v.x, v.y, 20, 0, 2 * Math.PI);
+                ctx.fillStyle = selectedVertex[graphNum] === i ? '#ff6b6b' : '#667eea';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i, v.x, v.y);
+            });
+        }
+
+        function clearGraph(graphNum) {
+            graphs[graphNum] = { vertices: [], edges: [] };
+            selectedVertex[graphNum] = null;
+            drawGraph(graphNum);
+            document.getElementById('result').style.display = 'none';
+        }
+
+        function clearAll() {
+            clearGraph(1);
+            clearGraph(2);
+        }
+
+        function getAdjacencyMatrix(graph) {
+            const n = graph.vertices.length;
+            const matrix = Array(n).fill(0).map(() => Array(n).fill(0));
+            graph.edges.forEach(edge => {
+                matrix[edge[0]][edge[1]] = 1;
+                matrix[edge[1]][edge[0]] = 1;
+            });
+            return matrix;
+        }
+
+        function getDegreeSequence(matrix) {
+            return matrix.map(row => row.reduce((a, b) => a + b, 0)).sort((a, b) => a - b);
+        }
+
+        function checkIsomorphism() {
+            const g1 = graphs[1];
+            const g2 = graphs[2];
+
+            if (g1.vertices.length !== g2.vertices.length || g1.edges.length !== g2.edges.length) {
+                showResult(false, "Different number of vertices or edges");
+                return;
+            }
+
+            if (g1.vertices.length === 0) {
+                showResult(false, "Both graphs are empty");
+                return;
+            }
+
+            const adj1 = getAdjacencyMatrix(g1);
+            const adj2 = getAdjacencyMatrix(g2);
+
+            const deg1 = getDegreeSequence(adj1);
+            const deg2 = getDegreeSequence(adj2);
+
+            if (JSON.stringify(deg1) !== JSON.stringify(deg2)) {
+                showResult(false, "Different degree sequences");
+                return;
+            }
+
+            // Try all permutations for small graphs
+            const n = g1.vertices.length;
+            if (n > 8) {
+                showResult(null, "Graph too large for exact verification (>8 vertices). Degree sequences match.");
+                return;
+            }
+
+            if (testIsomorphism(adj1, adj2)) {
+                showResult(true, "Graphs are isomorphic!");
+            } else {
+                showResult(false, "Graphs are NOT isomorphic");
+            }
+        }
+
+        function testIsomorphism(adj1, adj2) {
+            const n = adj1.length;
+            const perm = Array.from({ length: n }, (_, i) => i);
+            
+            return permute(perm, 0);
+
+            function permute(arr, start) {
+                if (start === arr.length - 1) {
+                    if (checkMapping(arr)) return true;
+                    return false;
+                }
+
+                for (let i = start; i < arr.length; i++) {
+                    [arr[start], arr[i]] = [arr[i], arr[start]];
+                    if (permute(arr, start + 1)) return true;
+                    [arr[start], arr[i]] = [arr[i], arr[start]];
+                }
+                return false;
+            }
+
+            function checkMapping(mapping) {
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        if (adj1[i][j] !== adj2[mapping[i]][mapping[j]]) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
+        function showResult(isIsomorphic, message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            
+            if (isIsomorphic === true) {
+                resultDiv.className = 'result isomorphic';
+                resultDiv.textContent = '✓ ' + message;
+            } else if (isIsomorphic === false) {
+                resultDiv.className = 'result not-isomorphic';
+                resultDiv.textContent = '✗ ' + message;
+            } else {
+                resultDiv.className = 'result';
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#fff3cd';
+                resultDiv.style.color = '#856404';
+                resultDiv.style.border = '2px solid #ffeaa7';
+                resultDiv.textContent = '⚠ ' + message;
+            }
+        }
+
+        function checkPlanarity() {
+            const results = [];
+            
+            for (let graphNum = 1; graphNum <= 2; graphNum++) {
+                const graph = graphs[graphNum];
+                const v = graph.vertices.length;
+                const e = graph.edges.length;
+                
+                if (v === 0) {
+                    results.push({ graphNum, planar: true, reason: "Empty graph (trivially planar)" });
+                    continue;
+                }
+                
+                // Euler's formula check: v - e + f = 2, and e <= 3v - 6 for planar graphs
+                if (v >= 3 && e > 3 * v - 6) {
+                    results.push({ graphNum, planar: false, reason: `Too many edges (${e} > ${3*v-6})` });
+                    continue;
+                }
+                
+                // Check for K5 or K3,3 subgraphs (Kuratowski's theorem)
+                const adj = getAdjacencyMatrix(graph);
+                
+                // Check for K5 (complete graph on 5 vertices)
+                if (hasK5(adj)) {
+                    results.push({ graphNum, planar: false, reason: "Contains K₅ subgraph" });
+                    continue;
+                }
+                
+                // Check for K3,3 (complete bipartite graph)
+                if (hasK33(adj)) {
+                    results.push({ graphNum, planar: false, reason: "Contains K₃,₃ subgraph" });
+                    continue;
+                }
+                
+                results.push({ graphNum, planar: true, reason: "No K₅ or K₃,₃ subgraph found" });
+            }
+            
+            showPlanarityResult(results);
+        }
+
+        function hasK5(adj) {
+            const n = adj.length;
+            if (n < 5) return false;
+            
+            // Check all combinations of 5 vertices
+            for (let i = 0; i < n - 4; i++) {
+                for (let j = i + 1; j < n - 3; j++) {
+                    for (let k = j + 1; k < n - 2; k++) {
+                        for (let l = k + 1; l < n - 1; l++) {
+                            for (let m = l + 1; m < n; m++) {
+                                const vertices = [i, j, k, l, m];
+                                if (isCompleteSubgraph(adj, vertices)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function hasK33(adj) {
+            const n = adj.length;
+            if (n < 6) return false;
+            
+            // Check all combinations of 6 vertices for K3,3
+            for (let i = 0; i < n - 5; i++) {
+                for (let j = i + 1; j < n - 4; j++) {
+                    for (let k = j + 1; k < n - 3; k++) {
+                        for (let l = k + 1; l < n - 2; l++) {
+                            for (let m = l + 1; m < n - 1; m++) {
+                                for (let o = m + 1; o < n; o++) {
+                                    const vertices = [i, j, k, l, m, o];
+                                    if (isK33Subgraph(adj, vertices)) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function isCompleteSubgraph(adj, vertices) {
+            for (let i = 0; i < vertices.length; i++) {
+                for (let j = i + 1; j < vertices.length; j++) {
+                    if (adj[vertices[i]][vertices[j]] === 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function isK33Subgraph(adj, vertices) {
+            // Try all possible partitions of 6 vertices into two sets of 3
+            const partitions = [
+                [[0, 1, 2], [3, 4, 5]],
+                [[0, 1, 3], [2, 4, 5]],
+                [[0, 1, 4], [2, 3, 5]],
+                [[0, 1, 5], [2, 3, 4]],
+                [[0, 2, 3], [1, 4, 5]],
+                [[0, 2, 4], [1, 3, 5]],
+                [[0, 2, 5], [1, 3, 4]],
+                [[0, 3, 4], [1, 2, 5]],
+                [[0, 3, 5], [1, 2, 4]],
+                [[0, 4, 5], [1, 2, 3]]
+            ];
+            
+            for (const [set1, set2] of partitions) {
+                let isK33 = true;
+                
+                // Check all edges between sets exist
+                for (const i of set1) {
+                    for (const j of set2) {
+                        if (adj[vertices[i]][vertices[j]] === 0) {
+                            isK33 = false;
+                            break;
+                        }
+                    }
+                    if (!isK33) break;
+                }
+                
+                if (!isK33) continue;
+                
+                // Check no edges within sets
+                for (let i = 0; i < set1.length - 1; i++) {
+                    for (let j = i + 1; j < set1.length; j++) {
+                        if (adj[vertices[set1[i]]][vertices[set1[j]]] === 1) {
+                            isK33 = false;
+                            break;
+                        }
+                    }
+                    if (!isK33) break;
+                }
+                
+                if (!isK33) continue;
+                
+                for (let i = 0; i < set2.length - 1; i++) {
+                    for (let j = i + 1; j < set2.length; j++) {
+                        if (adj[vertices[set2[i]]][vertices[set2[j]]] === 1) {
+                            isK33 = false;
+                            break;
+                        }
+                    }
+                    if (!isK33) break;
+                }
+                
+                if (isK33) return true;
+            }
+            
+            return false;
+        }
+
+        function showPlanarityResult(results) {
+            const resultDiv = document.getElementById('planarity-result');
+            let message = '';
+            
+            for (const result of results) {
+                const status = result.planar ? '✓ PLANAR' : '✗ NON-PLANAR';
+                message += `Graph ${result.graphNum}: ${status} - ${result.reason}\n`;
+            }
+            
+            resultDiv.textContent = message;
+            
+            const allPlanar = results.every(r => r.planar);
+            const anyNonPlanar = results.some(r => !r.planar);
+            
+            if (anyNonPlanar) {
+                resultDiv.className = 'planarity-result non-planar';
+            } else if (allPlanar) {
+                resultDiv.className = 'planarity-result planar';
+            }
+            
+            resultDiv.style.whiteSpace = 'pre-line';
+        }
+
+        // Initialize
+        drawGraph(1);
+        drawGraph(2);
+    </script>
+</body>
+</html>
