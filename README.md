@@ -1,10 +1,9 @@
-# Graph Analysis Tool - Complete Documentation
+# Graph Theory Computer
 
 ## Project Overview
-
 An interactive web-based tool for drawing, analyzing, and comparing graphs. This tool provides comprehensive graph theory analysis including isomorphism checking, planarity testing, and various graph properties.
 
-**Created with**: Claude Sonnet (Anthropic AI)
+**Created with:** Claude Sonnet (Anthropic AI)
 
 ---
 
@@ -12,7 +11,7 @@ An interactive web-based tool for drawing, analyzing, and comparing graphs. This
 
 ### 1. Graph Drawing Interface
 - **Dual Canvas System**: Draw and compare two graphs side by side
-- **Three Interaction Modes**:
+- **Three Interaction Modes:**
   - **Add Vertex**: Click anywhere on the canvas to place a vertex
   - **Add Edge**: Click two vertices sequentially to connect them
   - **Delete**: Click vertices to remove them (edges connected to them are also removed)
@@ -33,13 +32,12 @@ Tests whether two graphs are structurally identical (same connectivity pattern, 
 ### 3. Planarity Testing
 Determines if a graph can be drawn on a plane without edge crossings.
 
-**Based on Kuratowski's Theorem:**
-A graph is planar if and only if it does not contain K₅ or K₃,₃ as a subgraph.
+**Based on Kuratowski's Theorem:** A graph is planar if and only if it does not contain K₅ or K₃,₃ as a subgraph.
 
 **Implementation:**
-1. Euler's formula quick check: e ≤ 3v - 6
-2. K₅ detection (complete graph on 5 vertices)
-3. K₃,₃ detection (complete bipartite graph)
+- Euler's formula quick check: e ≤ 3v - 6
+- K₅ detection (complete graph on 5 vertices)
+- K₃,₃ detection (complete bipartite graph)
 
 **Classic Examples:**
 - K₄: Planar ✓
@@ -48,46 +46,43 @@ A graph is planar if and only if it does not contain K₅ or K₃,₃ as a subgr
 
 ### 4. Graph Properties Analysis
 
-#### a) **Complete Graph**
+#### a) Complete Graph
 - **Definition**: Every pair of vertices is connected by an edge
 - **Formula**: A complete graph Kₙ has n(n-1)/2 edges
 - **Algorithm**: Checks all vertex pairs for edges
 
-#### b) **Connected Graph**
+#### b) Connected Graph
 - **Definition**: There exists a path between every pair of vertices
 - **Algorithm**: Depth-First Search (DFS) from any vertex
 - **Time Complexity**: O(V + E)
 
-#### c) **Euler Cycle**
+#### c) Euler Cycle
 - **Definition**: A cycle that visits every edge exactly once
 - **Euler's Theorem**: A connected graph has an Euler cycle if and only if every vertex has even degree
+- **Three Possible Outcomes:**
+  - Euler Cycle: All vertices have even degree
+  - Euler Path (not cycle): Exactly 2 vertices have odd degree
+  - Neither: More than 2 vertices have odd degree
 
-**Three Possible Outcomes:**
-1. **Euler Cycle**: All vertices have even degree
-2. **Euler Path** (not cycle): Exactly 2 vertices have odd degree
-3. **Neither**: More than 2 vertices have odd degree
-
-#### d) **Hamiltonian Circuit**
+#### d) Hamiltonian Circuit
 - **Definition**: A cycle that visits every vertex exactly once
 - **NP-Complete Problem**: No known polynomial-time algorithm
-
-**Detection Methods:**
-- **Small graphs (≤8 vertices)**: Backtracking algorithm to find actual circuit
-- **Large graphs**: Dirac's Theorem - if every vertex has degree ≥ n/2, then Hamiltonian
+- **Detection Methods:**
+  - Small graphs (≤8 vertices): Backtracking algorithm to find actual circuit
+  - Large graphs: Dirac's Theorem - if every vertex has degree ≥ n/2, then Hamiltonian
 - **Note**: Finding Hamiltonian circuits is computationally hard for large graphs
 
-#### e) **Chromatic Number (χ)**
+#### e) Chromatic Number (χ)
 - **Definition**: Minimum number of colors needed to color vertices so no adjacent vertices share a color
 - **Applications**: Scheduling, register allocation, map coloring
-
-**Algorithm:**
-1. Check if bipartite (χ = 2)
-2. Check if complete (χ = n)
-3. Greedy coloring with multiple vertex orderings:
-   - Natural order
-   - Degree-descending order (Welsh-Powell)
-   - Random order
-4. Return minimum colors found
+- **Algorithm:**
+  - Check if bipartite (χ = 2)
+  - Check if complete (χ = n)
+  - Greedy coloring with multiple vertex orderings:
+    - Natural order
+    - Degree-descending order (Welsh-Powell)
+    - Random order
+  - Return minimum colors found
 
 **Special Cases:**
 - Empty graph: χ = 0
@@ -107,25 +102,25 @@ A graph is planar if and only if it does not contain K₅ or K₃,₃ as a subgr
 - Active mode is highlighted in purple
 
 **Graph Controls:**
-- **Clear Graph 1/2**: Removes all vertices and edges from one graph
-- **Clear All**: Resets both graphs completely
+- Clear Graph 1/2: Removes all vertices and edges from one graph
+- Clear All: Resets both graphs completely
 
 ### Analysis Buttons
 
-1. **Check Isomorphism**
-   - Compares Graph 1 and Graph 2
-   - Shows result with explanation
-   - Green = Isomorphic, Red = Not Isomorphic
+**Check Isomorphism**
+- Compares Graph 1 and Graph 2
+- Shows result with explanation
+- Green = Isomorphic, Red = Not Isomorphic
 
-2. **Check Planarity**
-   - Analyzes both graphs independently
-   - Shows which graph is planar/non-planar and why
-   - Identifies specific subgraphs (K₅ or K₃,₃) if non-planar
+**Check Planarity**
+- Analyzes both graphs independently
+- Shows which graph is planar/non-planar and why
+- Identifies specific subgraphs (K₅ or K₃,₃) if non-planar
 
-3. **Analyze Properties**
-   - Comprehensive analysis of both graphs
-   - Displays all properties in organized sections
-   - Color-coded results (green = yes, red = no)
+**Analyze Properties**
+- Comprehensive analysis of both graphs
+- Displays all properties in organized sections
+- Color-coded results (green = yes, red = no)
 
 ### Visual Elements
 
@@ -204,9 +199,7 @@ For each vertex v:
     Assign v the smallest color not in usedColors
 ```
 
----
-
-## Algorithm Complexity Analysis
+### Algorithm Complexity Analysis
 
 | Algorithm | Time Complexity | Space Complexity |
 |-----------|----------------|------------------|
@@ -218,7 +211,7 @@ For each vertex v:
 | Hamiltonian (n≤8) | O(n! × n) | O(n) |
 | Chromatic Number | O(V² × attempts) | O(V) |
 
-**Note:** V = vertices, E = edges
+*Note: V = vertices, E = edges*
 
 ---
 
@@ -254,7 +247,7 @@ For each vertex v:
 **Draw:**
 - Outer pentagon: 5 vertices connected in cycle
 - Inner pentagram: 5 vertices forming a star
-- Connect outer to inner (10 edges total + 5 outer + 5 inner = 20 edges... actually 15 edges)
+- Connect outer to inner (15 edges total)
 
 **Expected Results:**
 - Complete: NO
@@ -282,15 +275,16 @@ For each vertex v:
 ## Limitations and Considerations
 
 ### Computational Limits
-1. **Isomorphism**: Only handles graphs with ≤8 vertices exactly; larger graphs use heuristics
-2. **Hamiltonian Circuit**: Exact detection limited to ≤8 vertices (NP-complete problem)
-3. **Planarity**: Checks for K₅ and K₃,₃ only; doesn't detect all graph minors
+- **Isomorphism**: Only handles graphs with ≤8 vertices exactly; larger graphs use heuristics
+- **Hamiltonian Circuit**: Exact detection limited to ≤8 vertices (NP-complete problem)
+- **Planarity**: Checks for K₅ and K₃,₃ only; doesn't detect all graph minors
 
 ### Known Issues
 - Large graphs (>20 vertices) may have performance issues
 - Chromatic number uses greedy heuristic, not guaranteed optimal
 - No support for directed graphs or weighted edges
 - No graph import/export functionality
+- **⚠️ Bipartite Detection Bug**: The bipartite checking algorithm contains a critical logical bug that produces false positives. The algorithm incorrectly identifies graphs as bipartite even when vertices within the same partition set have edges between them. By definition, a bipartite graph must have all edges connecting vertices from different sets only - no edges should exist between vertices in the same partition. The current implementation fails to properly validate this constraint, leading to incorrect bipartite classifications.
 
 ### Browser Compatibility
 - Requires HTML5 Canvas support
@@ -302,12 +296,12 @@ For each vertex v:
 ## Educational Applications
 
 ### Teaching Topics
-1. **Graph Theory Fundamentals**: Vertices, edges, adjacency
-2. **Graph Isomorphism**: Structural equivalence vs. visual representation
-3. **Planarity**: Kuratowski's theorem, graph minors
-4. **Eulerian Paths**: Seven Bridges of Königsberg problem
-5. **Hamiltonian Cycles**: Traveling Salesman Problem introduction
-6. **Graph Coloring**: Four Color Theorem, scheduling problems
+- Graph Theory Fundamentals: Vertices, edges, adjacency
+- Graph Isomorphism: Structural equivalence vs. visual representation
+- Planarity: Kuratowski's theorem, graph minors
+- Eulerian Paths: Seven Bridges of Königsberg problem
+- Hamiltonian Cycles: Traveling Salesman Problem introduction
+- Graph Coloring: Four Color Theorem, scheduling problems
 
 ### Classroom Activities
 - Compare different drawings of the same graph
@@ -321,17 +315,18 @@ For each vertex v:
 ## Future Enhancement Ideas
 
 ### Potential Features
-1. **Graph Import/Export**: Save and load graphs in standard formats (JSON, GraphML)
-2. **Directed Graph Support**: Add arrows and directed edge analysis
-3. **Weighted Graphs**: Edge weights with shortest path algorithms
-4. **Animation**: Visualize algorithm execution step-by-step
-5. **More Algorithms**: 
-   - Minimum spanning tree (Kruskal, Prim)
-   - Shortest path (Dijkstra, Bellman-Ford)
-   - Maximum flow (Ford-Fulkerson)
-6. **Graph Generators**: Automatically create common graph types
-7. **Better Hamiltonian Detection**: Approximation algorithms for larger graphs
-8. **Improved UI**: Drag vertices, curved edges, better mobile support
+- **Graph Import/Export**: Save and load graphs in standard formats (JSON, GraphML)
+- **Directed Graph Support**: Add arrows and directed edge analysis
+- **Weighted Graphs**: Edge weights with shortest path algorithms
+- **Animation**: Visualize algorithm execution step-by-step
+- **More Algorithms:**
+  - Minimum spanning tree (Kruskal, Prim)
+  - Shortest path (Dijkstra, Bellman-Ford)
+  - Maximum flow (Ford-Fulkerson)
+- **Graph Generators**: Automatically create common graph types
+- **Better Hamiltonian Detection**: Approximation algorithms for larger graphs
+- **Improved UI**: Drag vertices, curved edges, better mobile support
+- **Fix Bipartite Detection**: Implement proper two-coloring algorithm with validation
 
 ### Advanced Features
 - Graph embedding/layout algorithms (force-directed, hierarchical)
@@ -358,6 +353,9 @@ For each vertex v:
 **Issue:** "Hamiltonian result uncertain"
 - **Solution**: For graphs >8 vertices, tool cannot verify exactly; try smaller graphs
 
+**Issue:** "Bipartite detection incorrect"
+- **Solution**: Known bug - the algorithm may incorrectly identify non-bipartite graphs as bipartite. Manually verify that no edges exist between vertices in the same partition set.
+
 ---
 
 ## Credits and References
@@ -368,9 +366,9 @@ For each vertex v:
 - **Dirac's Theorem**: G. A. Dirac (1952), Hamiltonian circuits
 
 ### Algorithm References
-- **Graph Isomorphism**: Permutation-based approach
-- **DFS/BFS**: Classic graph traversal algorithms
-- **Greedy Coloring**: Welsh-Powell algorithm variant
+- Graph Isomorphism: Permutation-based approach
+- DFS/BFS: Classic graph traversal algorithms
+- Greedy Coloring: Welsh-Powell algorithm variant
 
 ---
 
@@ -378,19 +376,38 @@ For each vertex v:
 
 This tool is created for educational purposes. Feel free to use, modify, and distribute for learning and teaching graph theory.
 
-**No warranties provided** - use at your own risk for academic and educational purposes.
+No warranties provided - use at your own risk for academic and educational purposes.
 
 ---
 
 ## Version History
-
 - **v1.0**: Initial isomorphism checker
 - **v2.0**: Added planarity testing
 - **v3.0**: Added comprehensive property analysis (complete, connected, Euler, Hamiltonian, chromatic number)
 - **v3.1**: Documentation created
-
----
+- **v3.2**: Documentation updated to reflect bipartite detection bug
 
 **Created**: 2024  
 **Last Updated**: 2024  
 **Developed with**: Claude Sonnet (Anthropic AI)
+
+---
+
+## About
+
+Web user interface that determines the various properties of graphs
+
+**Website**: [mabogiqwa.github.io/Graph-Theory-Computer/](https://mabogiqwa.github.io/Graph-Theory-Computer/)
+
+### Repository Information
+- **Stars**: 0 stars
+- **Watchers**: 0 watching
+- **Forks**: 0 forks
+- **Releases**: No releases published
+- **Packages**: No packages published
+- **Deployments**: 2 (github-pages)
+- **Languages**: HTML 100.0%
+
+---
+
+*© 2025 GitHub, Inc.*
